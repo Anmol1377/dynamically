@@ -1,0 +1,175 @@
+{
+  "info": {
+    "_postman_id": "dynamically-public-api-v1",
+    "name": "Dynamically — Public API",
+    "description": "Read content from a Dynamically instance over the public REST API. Set the `baseUrl`, `apiKey`, and (optionally) `previewKey` collection variables before running.\n\n- `apiKey` should be a `dyn_pub_…` (read scope) key from Settings → API keys.\n- `previewKey` should be a `dyn_prv_…` (preview scope) key — only needed for the draft / preview request.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{apiKey}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3030",
+      "type": "string",
+      "description": "URL of your Dynamically instance"
+    },
+    {
+      "key": "apiKey",
+      "value": "",
+      "type": "string",
+      "description": "Read-scope API key (dyn_pub_…)"
+    },
+    {
+      "key": "previewKey",
+      "value": "",
+      "type": "string",
+      "description": "Preview-scope API key (dyn_prv_…) — only needed for the preview request"
+    },
+    {
+      "key": "pageSlug",
+      "value": "home",
+      "type": "string",
+      "description": "Slug of the page to fetch"
+    }
+  ],
+  "item": [
+    {
+      "name": "List published pages",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/pages",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "pages"]
+        },
+        "description": "Returns all pages with status='published'."
+      },
+      "response": [
+        {
+          "name": "Example",
+          "originalRequest": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/pages" }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"pages\": [\n    { \"slug\": \"home\", \"title\": \"Home\", \"updatedAt\": \"2026-04-29T10:30:00.000Z\" }\n  ]\n}"
+        }
+      ]
+    },
+    {
+      "name": "Get a page by slug",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/pages/{{pageSlug}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "pages", "{{pageSlug}}"]
+        },
+        "description": "Full content tree for one published page. Sections keyed by slug; image fields are expanded to `{ url, width, height, alt }`."
+      },
+      "response": [
+        {
+          "name": "Example",
+          "originalRequest": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/pages/home" }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"slug\": \"home\",\n  \"title\": \"Home\",\n  \"status\": \"published\",\n  \"updatedAt\": \"2026-04-29T10:30:00.000Z\",\n  \"sections\": {\n    \"hero\": {\n      \"headline\": \"Build sites your marketing team can edit\",\n      \"background\": {\n        \"url\": \"/uploads/abc123.jpg\",\n        \"width\": 1920,\n        \"height\": 1080,\n        \"alt\": \"Team collaborating\"\n      }\n    }\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Get a page (preview / draft)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            { "key": "token", "value": "{{previewKey}}", "type": "string" }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/pages/{{pageSlug}}?preview=true",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "pages", "{{pageSlug}}"],
+          "query": [{ "key": "preview", "value": "true" }]
+        },
+        "description": "Returns the latest draft instead of the published version. Requires a preview-scope key (`dyn_prv_…`). A read-scope key here returns 403."
+      },
+      "response": []
+    },
+    {
+      "name": "Anonymous read (public mode on)",
+      "request": {
+        "auth": { "type": "noauth" },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/pages/{{pageSlug}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "pages", "{{pageSlug}}"]
+        },
+        "description": "No Authorization header. Returns 200 only when **Settings → General → Allow anonymous public reads** is toggled ON in the admin UI. Useful for browser SPAs (Vite, CRA) that can't safely hold an API key. Returns 401 when public reads are off — see the next request."
+      },
+      "response": []
+    },
+    {
+      "name": "401 — missing key (public mode off)",
+      "request": {
+        "auth": { "type": "noauth" },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/pages/{{pageSlug}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "pages", "{{pageSlug}}"]
+        },
+        "description": "Sanity check: with no Authorization header AND `publicReadEnabled = false` (the default), the API returns 401. Same request as 'Anonymous read' — different expected outcome based on the setting."
+      },
+      "response": [
+        {
+          "name": "Example",
+          "originalRequest": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/v1/pages/home" } },
+          "status": "Unauthorized",
+          "code": 401,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"error\": {\n    \"code\": \"UNAUTHORIZED\",\n    \"message\": \"Missing Authorization header. Use: Bearer <key>\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "404 — unknown slug",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/pages/does-not-exist",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "pages", "does-not-exist"]
+        },
+        "description": "Returns 404 with a JSON error body when the slug doesn't match any published page."
+      },
+      "response": []
+    }
+  ]
+}

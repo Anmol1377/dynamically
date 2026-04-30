@@ -1,0 +1,20 @@
+services:
+  dynamically:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dynamically:latest
+    container_name: dynamically
+    restart: unless-stopped
+    ports:
+      - "3030:3030"
+    volumes:
+      - dynamically-data:/data
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: /data/dynamically.db
+      UPLOAD_DIR: /data/uploads
+      PUBLIC_URL: http://localhost:3030
+
+volumes:
+  dynamically-data:

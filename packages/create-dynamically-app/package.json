@@ -1,0 +1,41 @@
+{
+  "name": "create-dynamically-app",
+  "version": "0.0.1",
+  "description": "Scaffold a new self-hosted Dynamically content instance — pages, sections, fields, public REST API, all backed by SQLite.",
+  "license": "MIT",
+  "type": "module",
+  "keywords": [
+    "cms",
+    "headless-cms",
+    "dynamically",
+    "scaffolder",
+    "next.js"
+  ],
+  "homepage": "https://github.com/Anmol1377/dynamically#readme",
+  "bugs": {
+    "url": "https://github.com/Anmol1377/dynamically/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Anmol1377/dynamically.git",
+    "directory": "packages/create-dynamically-app"
+  },
+  "bin": {
+    "create-dynamically-app": "./cli.mjs"
+  },
+  "files": [
+    "cli.mjs",
+    "template",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node scripts/build-template.mjs",
+    "prepublishOnly": "pnpm build"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

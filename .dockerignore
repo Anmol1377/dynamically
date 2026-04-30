@@ -1,0 +1,27 @@
+**/node_modules
+**/.next
+**/dist
+**/.turbo
+
+# Local data — never ship in the image
+**/data/*.db*
+**/uploads
+apps/web/data
+apps/web/uploads
+
+# Test / dev artefacts
+**/coverage
+**/.env
+**/.env.local
+**/.env.*.local
+*.log
+.DS_Store
+.git
+.github
+.vscode
+.idea
+**/*.tsbuildinfo
+**/next-env.d.ts
+
+# Examples — they're not part of the runtime image
+examples

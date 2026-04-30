@@ -1,0 +1,39 @@
+node_modules
+.next
+dist
+.turbo
+
+# Local data (never commit)
+data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Uploads (local FS storage)
+uploads/
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+.claude/
+
+# Scaffolder template (regenerated on prepublish)
+packages/create-dynamically-app/template/
+
+# SDK build output (regenerated on prepublish)
+packages/client/dist/

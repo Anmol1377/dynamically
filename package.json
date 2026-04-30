@@ -1,0 +1,30 @@
+{
+  "name": "dynamically",
+  "version": "0.0.1",
+  "private": true,
+  "description": "API-first headless content layer for Next.js / React sites",
+  "license": "MIT",
+  "packageManager": "pnpm@10.33.2",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @dynamically/web dev",
+    "build": "pnpm --filter @dynamically/web build",
+    "start": "pnpm --filter @dynamically/web start",
+    "db:generate": "pnpm --filter @dynamically/web db:generate",
+    "db:migrate": "pnpm --filter @dynamically/web db:migrate",
+    "db:studio": "pnpm --filter @dynamically/web db:studio",
+    "lint": "pnpm --filter @dynamically/web lint",
+    "typecheck": "pnpm --filter @dynamically/web typecheck"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3",
+      "esbuild",
+      "@node-rs/argon2",
+      "unrs-resolver",
+      "sharp"
+    ]
+  }
+}
