@@ -208,7 +208,7 @@ npm run dev
 
 Or via Docker:
 ```bash
-docker run -p 3030:3030 -v ./data:/app/data dynamically/dynamically
+docker run -p 3030:3030 -v ./data:/data anmol1377/dynamically
 ```
 
 ### 6.8 Schema Export / Import
@@ -505,7 +505,7 @@ ApiKey {
 
 ### 11.1 Distribution channels (MVP)
 1. **npm:** `npx create-dynamically-app` (CLI scaffolds + auto-runs)
-2. **Docker:** `docker run dynamically/dynamically`
+2. **Docker:** `docker run anmol1377/dynamically` *(when published to Docker Hub)*
 3. **Source:** Clone repo + `pnpm install && pnpm dev`
 
 ### 11.2 Hosting recommendations (documented for users)

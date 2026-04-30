@@ -1,6 +1,6 @@
 # @anmollabs/dynamically-client
 
-Framework-agnostic client SDK for the [Dynamically](https://github.com/) content API.
+Framework-agnostic client SDK for the [Dynamically](https://github.com/Anmol1377/dynamically) content API.
 
 ## Install
 

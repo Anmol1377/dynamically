@@ -54,12 +54,11 @@ npm view create-dynamically-app
 
 > If a name is taken on npm, the create command in step 4 will fail with `403 Forbidden`. Pick a different name and try again.
 
-### 1.3 Update `homepage` / `repository` URLs
+### 1.3 `homepage` / `repository` URLs
 
-Both `package.json` files currently point at `https://github.com/dynamically/dynamically`. Change those to your real GitHub repo URL before publishing.
+Already set to `https://github.com/Anmol1377/dynamically` in both package.json files. If the repo moves or you fork, update these:
 
 ```bash
-# Files to update:
 packages/client/package.json
 packages/create-dynamically-app/package.json
 ```

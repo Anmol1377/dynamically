@@ -112,7 +112,7 @@ async function writeTopLevelReadme(target, name) {
     path,
     `# ${name}
 
-A self-hosted [Dynamically](https://github.com/dynamically/dynamically) content instance.
+A self-hosted [Dynamically](https://github.com/Anmol1377/dynamically) content instance.
 
 ## Run
 

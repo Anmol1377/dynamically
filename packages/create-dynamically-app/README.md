@@ -1,6 +1,6 @@
 # create-dynamically-app
 
-Scaffold a new self-hosted [Dynamically](../../) content instance.
+Scaffold a new self-hosted [Dynamically](https://github.com/Anmol1377/dynamically) content instance.
 
 ## Usage
 
