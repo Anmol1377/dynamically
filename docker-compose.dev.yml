@@ -1,0 +1,26 @@
+# Build the image from local source instead of pulling from Docker Hub.
+# Use this when developing the Dockerfile or testing local changes:
+#   docker compose -f docker-compose.dev.yml up --build
+#
+# Production users should use the default docker-compose.yml, which pulls
+# the published image from anmol1377/dynamically.
+services:
+  dynamically:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dynamically:dev
+    container_name: dynamically-dev
+    restart: unless-stopped
+    ports:
+      - "3030:3030"
+    volumes:
+      - dynamically-dev-data:/data
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: /data/dynamically.db
+      UPLOAD_DIR: /data/uploads
+      PUBLIC_URL: http://localhost:3030
+
+volumes:
+  dynamically-dev-data:

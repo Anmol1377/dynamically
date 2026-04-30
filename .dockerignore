@@ -3,11 +3,14 @@
 **/dist
 **/.turbo
 
-# Local data — never ship in the image
-**/data/*.db*
-**/uploads
+# Local data — never ship in the image (be explicit, not glob, so we don't
+# accidentally exclude source dirs named uploads/data)
 apps/web/data
 apps/web/uploads
+**/*.db
+**/*.db-journal
+**/*.db-wal
+**/*.db-shm
 
 # Test / dev artefacts
 **/coverage
@@ -25,3 +28,7 @@ apps/web/uploads
 
 # Examples — they're not part of the runtime image
 examples
+
+# Scaffolder template (regenerated; not needed in the runtime image)
+packages/create-dynamically-app/template
+packages/client/dist

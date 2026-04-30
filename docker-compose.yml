@@ -1,9 +1,6 @@
 services:
   dynamically:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: dynamically:latest
+    image: anmol1377/dynamically:latest
     container_name: dynamically
     restart: unless-stopped
     ports:

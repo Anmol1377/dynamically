@@ -42,6 +42,14 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN pnpm --filter @dynamically/web build
 
+# Bundle the migration runner so it has no runtime drizzle-orm dependency
+# (better-sqlite3 stays external — it's a native binding the standalone
+# output already provides).
+RUN npx esbuild apps/web/lib/db/migrate.mjs \
+    --bundle --format=esm --platform=node --target=node20 \
+    --external:better-sqlite3 \
+    --outfile=apps/web/lib/db/migrate.bundled.mjs
+
 ###############
 # 3. Runtime  #
 ###############
@@ -65,17 +73,14 @@ COPY --from=builder --chown=nextjs:nodejs /repo/apps/web/.next/standalone /app
 COPY --from=builder --chown=nextjs:nodejs /repo/apps/web/.next/static /app/apps/web/.next/static
 COPY --from=builder --chown=nextjs:nodejs /repo/apps/web/public /app/apps/web/public
 
-# Migration files + runner (the standalone output doesn't include .sql / scripts)
+# Migration files + esbuild-bundled migration runner. The bundle inlines
+# drizzle-orm so the only external dep is better-sqlite3, which is already
+# traced into the standalone output's node_modules.
 COPY --from=builder --chown=nextjs:nodejs /repo/apps/web/lib/db/migrations /app/apps/web/lib/db/migrations
-COPY --from=builder --chown=nextjs:nodejs /repo/apps/web/lib/db/migrate.ts /app/apps/web/lib/db/migrate.ts
-COPY --from=builder --chown=nextjs:nodejs /repo/apps/web/scripts /app/apps/web/scripts
-
-# Need tsx and the few packages migrate.ts uses at runtime
-RUN npm install --omit=dev --no-package-lock --prefix /app/apps/web \
-    tsx@4 better-sqlite3@11 drizzle-orm@0.36
+COPY --from=builder --chown=nextjs:nodejs /repo/apps/web/lib/db/migrate.bundled.mjs /app/apps/web/lib/db/migrate.mjs
 
 USER nextjs
 EXPOSE 3030
 
 # Run pending migrations, then start the standalone Next.js server.
-CMD ["sh", "-c", "cd /app/apps/web && npx tsx lib/db/migrate.ts && cd /app && node apps/web/server.js"]
+CMD ["sh", "-c", "cd /app/apps/web && node lib/db/migrate.mjs && node server.js"]

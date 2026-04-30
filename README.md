@@ -31,32 +31,52 @@ Coming next (M5.5 / M6 polish): repeater + group field types, npm-published pack
 
 ## Quick start
 
-### Docker (recommended for self-host)
+### Docker — one-command self-host (recommended)
+
+The image is published on [Docker Hub](https://hub.docker.com/r/anmol1377/dynamically) for `linux/amd64` + `linux/arm64`. No git clone needed:
 
 ```bash
+mkdir my-cms && cd my-cms
+curl -O https://raw.githubusercontent.com/Anmol1377/dynamically/main/docker-compose.yml
 docker compose up -d
 # → open http://localhost:3030 — setup wizard runs on first boot
 ```
 
-Persistent data lives in the `dynamically-data` named volume (DB + uploads).
+The image auto-runs migrations on every container start. Persistent data lives in the `dynamically-data` named volume (DB + uploads).
 
-### Source / development
+To pin a specific version instead of `latest`:
 
 ```bash
-pnpm install
-pnpm db:migrate
-pnpm dev
-# → http://localhost:3030
+docker pull anmol1377/dynamically:0.1.0
 ```
 
 ### Scaffold a new instance from npm
+
+If you want to **edit the source** (add custom field types, fork the admin UI, etc.) instead of running the prebuilt image:
 
 ```bash
 npx create-dynamically-app my-content
 cd my-content && npm run dev
 ```
 
-This downloads the [`create-dynamically-app`](https://www.npmjs.com/package/create-dynamically-app) scaffolder, copies the full app template into `my-content/`, runs `npm install`, and applies the initial database migration. Open http://localhost:3030 to complete the setup wizard.
+This downloads the [`create-dynamically-app`](https://www.npmjs.com/package/create-dynamically-app) scaffolder, copies the full app template, runs `npm install`, and applies the initial database migration. Open http://localhost:3030 to complete setup.
+
+### Develop the project itself
+
+```bash
+git clone https://github.com/Anmol1377/dynamically.git
+cd dynamically
+pnpm install
+pnpm db:migrate
+pnpm dev
+# → http://localhost:3030
+```
+
+To build & test the Docker image locally before pushing:
+
+```bash
+docker compose -f docker-compose.dev.yml up --build
+```
 
 ## Field types (12)
 
