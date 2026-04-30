@@ -174,6 +174,62 @@ Once published, edit the main [README.md](./README.md):
 
 ---
 
+## Step 7 — Publish the Docker image (multi-arch)
+
+Pre-reqs:
+
+1. **Docker Desktop installed and running** (`docker --version`)
+2. **Docker Hub account + Personal Access Token** with Read & Write — create at https://app.docker.com/settings/personal-access-tokens
+3. **Logged in**: `docker login -u anmol1377` and paste the token (NOT your password)
+
+One-time buildx setup:
+
+```bash
+docker buildx create --name multiarch --driver docker-container --use
+docker buildx inspect --bootstrap
+```
+
+Build + push for both architectures in one shot:
+
+```bash
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  -t anmol1377/dynamically:0.1.X \
+  -t anmol1377/dynamically:latest \
+  --push \
+  .
+```
+
+Replace `0.1.X` with the new release version. Always tag both — `latest` alone is dangerous because users can't pin a known-good version.
+
+The first multi-arch build takes ~10 min (qemu emulation for the non-native arch). Subsequent builds reuse cache.
+
+### Verify the manifest
+
+```bash
+docker buildx imagetools inspect anmol1377/dynamically:latest
+```
+
+Should list both `linux/amd64` and `linux/arm64` manifests.
+
+### Smoke-test from a fresh dir (no source code needed)
+
+```bash
+mkdir /tmp/dynamically-pull-test && cd /tmp/dynamically-pull-test
+curl -O https://raw.githubusercontent.com/Anmol1377/dynamically/main/docker-compose.yml
+docker compose up -d
+curl -sI http://localhost:3030/login | head -3   # → HTTP/1.1 307 + security headers
+docker compose down -v
+```
+
+### Things that can go wrong
+
+- **`Failed to collect page data`** during build → usually means a route handler imports something that opens native bindings at module load. We solved this once with [`lib/db/client.ts`](apps/web/lib/db/client.ts) using a Proxy for lazy SQLite init. If you add another module-level resource open, do the same trick.
+- **Push hangs at "exporting to image"** → buildx internal flake. Cancel and retry. The buildkit cache from the previous attempt makes the retry fast.
+- **`401 Unauthorized` during push** → Docker Hub PAT expired. Generate a new one and `docker login` again.
+
+---
+
 ## Troubleshooting
 
 **`403 Forbidden` on publish** — name is taken or your account doesn't own the scope. Either rename the package or create the org/use your personal scope.

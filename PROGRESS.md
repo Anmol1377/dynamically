@@ -2,7 +2,48 @@
 
 > Companion to [TECHNICAL_IMPLEMENTATION.md](./TECHNICAL_IMPLEMENTATION.md). Shows milestone status and what's next.
 
-## Current state — M6: Polish & ship ✅ DONE — MVP shippable
+## Current state — Shipped to all three registries 🚀
+
+**The product is publicly published, installable, and self-hostable as of 2026-04-30.**
+
+### Live artifacts
+
+| Registry | Package | Tag |
+|---|---|---|
+| npm (SDK) | [`@anmollabs/dynamically-client`](https://www.npmjs.com/package/@anmollabs/dynamically-client) | `0.0.1` |
+| npm (scaffolder) | [`create-dynamically-app`](https://www.npmjs.com/package/create-dynamically-app) | `0.0.3` |
+| Docker Hub | [`anmol1377/dynamically`](https://hub.docker.com/r/anmol1377/dynamically) | `0.1.0`, `latest` (multi-arch: amd64 + arm64) |
+| GitHub | [`Anmol1377/dynamically`](https://github.com/Anmol1377/dynamically) | `main` |
+
+### Verified end-to-end (all from clean state, no source checkout)
+
+- ✅ `npx create-dynamically-app my-cms` → install + migrate + run → setup wizard fires
+- ✅ `docker compose up -d` (with compose file from raw GitHub URL) → migration runs → Next.js boots in 43ms → setup wizard fires → went through full setup successfully
+- ✅ Multi-arch image (amd64 + arm64) on Docker Hub, pulls clean from registry
+- ✅ SDK installs from npm in fresh dir, exports `DynamicallyClient` + `DynamicallyApiError`
+
+### Docker publish workflow (for future releases)
+
+```bash
+docker buildx build --platform linux/amd64,linux/arm64 \
+  -t anmol1377/dynamically:0.1.X \
+  -t anmol1377/dynamically:latest \
+  --push .
+```
+
+The `prepublishOnly` hooks in both npm packages handle SDK build + scaffolder template build automatically on `pnpm publish`.
+
+### Bug fixes shipped during this milestone
+
+- **`create-dynamically-app@0.0.2`** — cp filter excluded all template files when run from `node_modules` (`includes('/node_modules/')` matched the source path itself). Fixed by computing path relative to template root before checking skip list.
+- **`create-dynamically-app@0.0.3`** — template's `tsconfig.json` extended `../../tsconfig.base.json` (monorepo path) which doesn't exist outside the monorepo. Fixed by inlining base config during template build.
+- **Lazy SQLite init** in [`lib/db/client.ts`](apps/web/lib/db/client.ts) — module-level `new Database()` call broke Next.js page-data collection under qemu emulation in multi-arch Docker builds. Now uses a Proxy that opens the connection on first DB access.
+- **`.dockerignore`** was excluding source dirs named `uploads/`/`data/` via overly-aggressive globs. Changed to explicit paths.
+- **Migration runner** moved from TypeScript (`migrate.ts` + `tsx`) to esbuild-bundled `migrate.bundled.mjs` so the runtime image needs no extra deps install.
+
+---
+
+## Previous milestone — M6: Polish & ship ✅ DONE — MVP shippable
 
 **Goal:** Make the project installable, hardened, and packaged.
 

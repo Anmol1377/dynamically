@@ -2,6 +2,11 @@
 
 > Self-hosted, API-first headless content layer for Next.js / React marketing sites. Pages → Sections → Fields, ACF-style. **MIT licensed.**
 
+[![npm — SDK](https://img.shields.io/npm/v/@anmollabs/dynamically-client?label=%40anmollabs%2Fdynamically-client&logo=npm)](https://www.npmjs.com/package/@anmollabs/dynamically-client)
+[![npm — scaffolder](https://img.shields.io/npm/v/create-dynamically-app?label=create-dynamically-app&logo=npm)](https://www.npmjs.com/package/create-dynamically-app)
+[![Docker Hub](https://img.shields.io/docker/v/anmol1377/dynamically/latest?label=docker&logo=docker)](https://hub.docker.com/r/anmol1377/dynamically)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+
 Built for the recurring pain: marketing keeps pinging developers to change the hero copy, swap an image, or tweak a CTA. Dynamically gives non-technical editors a clean admin UI; your frontend reads the published content over a typed REST API and keeps shipping.
 
 ```
@@ -18,16 +23,25 @@ Built for the recurring pain: marketing keeps pinging developers to change the h
 
 ## Status
 
-**Pre-1.0 (working alpha).** All four core flows work end-to-end:
+**v0.1 alpha — published and self-hostable today.** Three artifacts, three registries:
+
+- 📦 **SDK on npm**: [`@anmollabs/dynamically-client`](https://www.npmjs.com/package/@anmollabs/dynamically-client) `0.0.1`
+- 📦 **Scaffolder on npm**: [`create-dynamically-app`](https://www.npmjs.com/package/create-dynamically-app) `0.0.3`
+- 🐳 **Docker image**: [`anmol1377/dynamically`](https://hub.docker.com/r/anmol1377/dynamically) `0.1.0`, `latest` (multi-arch: `linux/amd64` + `linux/arm64`)
+- 💻 **Source**: [github.com/Anmol1377/dynamically](https://github.com/Anmol1377/dynamically)
+
+Working end-to-end:
 
 - ✅ Schema builder — pages, sections, fields with 12 field types
 - ✅ Content editor — debounced auto-save, draft / publish / discard, "unpublished changes" indicator
 - ✅ Public REST API + JSON serializer with API-key auth
-- ✅ TypeScript SDK (`@anmollabs/dynamically-client`) with a Next.js helper
+- ✅ TypeScript SDK with a Next.js helper
 - ✅ Media library with image upload, alt text, and metadata expansion in API
 - ✅ Rich text via Tiptap
+- ✅ Docker self-host with one command, auto-migrates on boot
+- ✅ MIT licensed, fully open source
 
-Coming next (M5.5 / M6 polish): repeater + group field types, npm-published packages, automated CI.
+Coming in v0.2: repeater + group field types (recursive), drag-reorder UI, automated CI for npm + Docker publishing.
 
 ## Quick start
 

@@ -16,7 +16,11 @@
     "db:migrate": "pnpm --filter @dynamically/web db:migrate",
     "db:studio": "pnpm --filter @dynamically/web db:studio",
     "lint": "pnpm --filter @dynamically/web lint",
-    "typecheck": "pnpm --filter @dynamically/web typecheck"
+    "typecheck": "pnpm --filter @dynamically/web typecheck",
+    "docker:build": "docker build -t anmol1377/dynamically:dev .",
+    "docker:run": "docker run --rm -p 3030:3030 -v dynamically-data:/data anmol1377/dynamically:dev",
+    "docker:publish": "echo 'Replace 0.1.X with the release version, then run:' && echo 'docker buildx build --platform linux/amd64,linux/arm64 -t anmol1377/dynamically:0.1.X -t anmol1377/dynamically:latest --push .'",
+    "publish:packages": "pnpm -r --filter './packages/*' publish --access public"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
