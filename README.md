@@ -49,19 +49,14 @@ pnpm dev
 # → http://localhost:3030
 ```
 
-### Scaffold a new instance from the template
-
-```bash
-# from the monorepo root, while we work toward npm publish:
-node packages/create-dynamically-app/cli.mjs my-content
-cd my-content && npm run dev
-```
-
-Once published to npm, the install becomes the canonical:
+### Scaffold a new instance from npm
 
 ```bash
 npx create-dynamically-app my-content
+cd my-content && npm run dev
 ```
+
+This downloads the [`create-dynamically-app`](https://www.npmjs.com/package/create-dynamically-app) scaffolder, copies the full app template into `my-content/`, runs `npm install`, and applies the initial database migration. Open http://localhost:3030 to complete the setup wizard.
 
 ## Field types (12)
 
@@ -123,9 +118,14 @@ curl -H "Authorization: Bearer dyn_pub_…" \
 
 ### 2. Wire up your frontend
 
-> **Heads-up:** `@anmollabs/dynamically-client` is not yet published to npm. `pnpm add @anmollabs/dynamically-client` won't work today. Until publish, pick one of the four paths below — Option A is what I'd recommend.
+The SDK is published as [`@anmollabs/dynamically-client`](https://www.npmjs.com/package/@anmollabs/dynamically-client) on npm. Install it directly:
 
-Add env vars to your frontend's `.env.local` (regardless of which option you pick):
+```bash
+pnpm add @anmollabs/dynamically-client
+# or: npm install @anmollabs/dynamically-client
+```
+
+Add env vars to your frontend's `.env.local`:
 
 ```bash
 DYNAMICALLY_URL=http://localhost:3030
@@ -134,34 +134,11 @@ DYNAMICALLY_API_KEY=dyn_pub_paste_the_full_key_here
 
 > Use `DYNAMICALLY_API_KEY` (not `NEXT_PUBLIC_…`) — this keeps the key server-side. **Never put an API key in a `NEXT_PUBLIC_*` variable** — those ship to the browser.
 
-#### Option A — Raw fetch (simplest, recommended today)
-
-The SDK is just a thin wrapper around `fetch`. Skip it. Drop a one-file helper into your project:
-
-```ts
-// lib/dynamically.ts in your Next.js app
-const baseUrl = process.env.DYNAMICALLY_URL!;
-const apiKey = process.env.DYNAMICALLY_API_KEY!;
-
-export async function getPage<T = Record<string, Record<string, unknown>>>(slug: string) {
-  const res = await fetch(`${baseUrl}/api/v1/pages/${slug}`, {
-    headers: { Authorization: `Bearer ${apiKey}` },
-    next: { revalidate: 60 },
-  });
-  if (!res.ok) throw new Error(`Dynamically fetch failed: ${res.status}`);
-  return (await res.json()) as {
-    slug: string;
-    title: string;
-    status: string;
-    updatedAt: string;
-    sections: T;
-  };
-}
-```
+#### Use it in any Server Component
 
 ```ts
 // app/page.tsx
-import { getPage } from '@/lib/dynamically';
+import { dynamicallyForNext } from '@anmollabs/dynamically-client/next';
 
 type HomeSections = {
   hero?: {
@@ -173,10 +150,10 @@ type HomeSections = {
   };
 };
 
-export const revalidate = 60;
+export const revalidate = 60;  // ISR — re-fetch every 60s
 
 export default async function HomePage() {
-  const home = await getPage<HomeSections>('home');
+  const home = await dynamicallyForNext().getPage<HomeSections>('home');
   const hero = home.sections.hero ?? {};
   return (
     <main>
@@ -188,69 +165,37 @@ export default async function HomePage() {
 }
 ```
 
-Zero install, zero linking. When npm publish happens later, swap two import lines for the real SDK in 5 minutes.
+That's the whole flow. Working example at [examples/next-marketing-site/](./examples/next-marketing-site/).
 
-This pattern works in any framework that runs server-side — Astro, Remix, Nuxt, Express, Cloudflare Workers, plain Node.
+#### Other frameworks — raw `fetch` works fine
 
-#### Option B — Copy the SDK source into your project
-
-The whole SDK is 3 small files. Copy [packages/client/src/](./packages/client/src/) into your app's `lib/dynamically/`:
-
-```bash
-cp -r /path/to/dynamically/packages/client/src \
-      /path/to/your-next-app/lib/dynamically
-```
-
-Then import:
+The API is plain REST, so the SDK is optional. Astro, Remix, Nuxt, Express, Cloudflare Workers — all work:
 
 ```ts
-import { dynamicallyForNext } from '@/lib/dynamically/next';
+const res = await fetch(`${process.env.DYNAMICALLY_URL}/api/v1/pages/home`, {
+  headers: { Authorization: `Bearer ${process.env.DYNAMICALLY_API_KEY}` },
+});
+const home = await res.json();
 ```
 
-You get the full typed `DynamicallyClient` class, `DynamicallyApiError`, etc. Trade-off: you'll have to manually re-copy if the SDK source changes upstream.
+#### Custom typed wrapper (if you don't want a runtime dep)
 
-#### Option C — Build your Next.js site INSIDE this monorepo
+The SDK is a thin wrapper. You can drop a one-file helper into your project instead:
 
-If your real frontend doesn't exist yet, the cleanest path is to add it as another workspace package — no copy, no link, just imports:
+```ts
+// lib/dynamically.ts
+const baseUrl = process.env.DYNAMICALLY_URL!;
+const apiKey = process.env.DYNAMICALLY_API_KEY!;
 
-```bash
-cd /path/to/dynamically
-mkdir apps/marketing-site
-cd apps/marketing-site
-
-# scaffold Next.js
-pnpm dlx create-next-app@14 . --ts --app --tailwind --no-eslint --no-import-alias
-
-# add the workspace dep
-pnpm add '@anmollabs/dynamically-client@workspace:*'
+export async function getPage<T = Record<string, Record<string, unknown>>>(slug: string) {
+  const res = await fetch(`${baseUrl}/api/v1/pages/${slug}`, {
+    headers: { Authorization: `Bearer ${apiKey}` },
+    next: { revalidate: 60 },
+  });
+  if (!res.ok) throw new Error(`Dynamically fetch failed: ${res.status}`);
+  return (await res.json()) as { slug: string; title: string; status: string; updatedAt: string; sections: T };
+}
 ```
-
-`next.config.mjs`:
-
-```js
-const nextConfig = { transpilePackages: ['@anmollabs/dynamically-client'] };
-export default nextConfig;
-```
-
-Then `import { dynamicallyForNext } from '@anmollabs/dynamically-client/next'` just works — this is exactly how [examples/next-marketing-site/](./examples/next-marketing-site/) is wired.
-
-#### Option D — `file:` install in a separate repo
-
-If your frontend lives in a totally different folder/repo and you want the real SDK package experience:
-
-```bash
-cd /path/to/your-real-site
-pnpm add file:/path/to/dynamically/packages/client
-```
-
-`next.config.mjs` needs to transpile the package (we ship TS source, not compiled JS):
-
-```js
-const nextConfig = { transpilePackages: ['@anmollabs/dynamically-client'] };
-export default nextConfig;
-```
-
-Trade-off: changes to the SDK source require `pnpm install` again to refresh.
 
 #### Browser-only SPA (Vite, CRA, plain React) — special case
 

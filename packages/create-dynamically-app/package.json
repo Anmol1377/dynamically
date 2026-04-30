@@ -1,6 +1,6 @@
 {
   "name": "create-dynamically-app",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Scaffold a new self-hosted Dynamically content instance — pages, sections, fields, public REST API, all backed by SQLite.",
   "license": "MIT",
   "type": "module",

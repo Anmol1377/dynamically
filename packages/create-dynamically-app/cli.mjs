@@ -46,12 +46,29 @@ async function main() {
   console.log(`  source: ${sourceTemplate}`);
 
   await mkdir(targetPath, { recursive: true });
+  const SKIP_SEGMENTS = new Set([
+    'node_modules',
+    '.next',
+    'data',
+    'uploads',
+    '.turbo',
+    'dist',
+  ]);
+  const SKIP_FILES = new Set(['next-env.d.ts', 'tsconfig.tsbuildinfo', '.env.local']);
   await cp(sourceTemplate, targetPath, {
     recursive: true,
     force: true,
     filter: (src) => {
-      const skip = ['node_modules', '.next', 'data', 'uploads', '.turbo', 'dist', 'tsbuildinfo'];
-      return !skip.some((s) => src.includes(`/${s}`) || src.endsWith(`/${s}`));
+      // Compute path relative to the source template root so we don't trip on
+      // ancestors like "/Users/.../node_modules/create-dynamically-app/template/...".
+      const rel = src.startsWith(sourceTemplate) ? src.slice(sourceTemplate.length) : src;
+      const segments = rel.split('/').filter(Boolean);
+      for (const seg of segments) {
+        if (SKIP_SEGMENTS.has(seg)) return false;
+      }
+      const base = segments[segments.length - 1];
+      if (base && SKIP_FILES.has(base)) return false;
+      return true;
     },
   });
 
