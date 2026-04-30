@@ -49,8 +49,7 @@ async function main() {
     filter: (src) => !shouldSkip(src),
   });
 
-  // Strip workspace-only fields from the template's package.json
-  // (the CLI also rewrites these per-instance, but starting clean is nicer).
+  // Strip workspace-only fields from the template's package.json.
   const pkgPath = join(templateDir, 'package.json');
   const pkg = JSON.parse(await readFile(pkgPath, 'utf-8'));
   pkg.name = 'dynamically-instance';
@@ -58,6 +57,20 @@ async function main() {
   pkg.private = true;
   delete pkg.publishConfig;
   await writeFile(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+
+  // Inline the monorepo's tsconfig.base.json so the scaffolded instance is
+  // self-contained — the original template extends "../../tsconfig.base.json"
+  // which doesn't exist outside the monorepo.
+  const tsconfigPath = join(templateDir, 'tsconfig.json');
+  const baseTsconfigPath = join(repoRoot, 'tsconfig.base.json');
+  const baseTsconfig = JSON.parse(await readFile(baseTsconfigPath, 'utf-8'));
+  const templateTsconfig = JSON.parse(await readFile(tsconfigPath, 'utf-8'));
+  delete templateTsconfig.extends;
+  templateTsconfig.compilerOptions = {
+    ...baseTsconfig.compilerOptions,
+    ...templateTsconfig.compilerOptions,
+  };
+  await writeFile(tsconfigPath, JSON.stringify(templateTsconfig, null, 2) + '\n');
 
   console.log(`[build-template] done`);
 }
